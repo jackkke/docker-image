@@ -41,11 +41,30 @@ docker push jackkke/openjdk:21.0.3-jdk-alpine
 ## 构建 Iandsec
 ### 构建镜像
 ```shell
-docker build -t jackkke/iandsec-base:20240515 -f iandsec-rockylinux/Dockerfile .
-docker build -t jackkke/iandsec-base:20240515-minimal -f iandsec-rockylinux/Dockerfile-minimal .
+docker build -t jackkke/iandsec-base:20240515 -f iandsec-rockylinux/Dockerfile ./iandsec-rockylinux
+docker build -t jackkke/iandsec-base:20240515-minimal -f iandsec-rockylinux/Dockerfile-minimal ./iandsec-rockylinux
 ```
 ### 推送镜像
 ```shell
 docker push jackkke/iandsec-base:20240515
 docker push jackkke/iandsec-base:20240515-minimal
+```
+## 构建 GM
+### 构建镜像
+```shell
+docker build -t jackkke/gm-base:7.9 -f iandsec-gm/Dockerfile-7 ./iandsec-gm
+docker build -t jackkke/gm-base:7.9-20240515 -f iandsec-gm/Dockerfile-7 .
+docker build -t jackkke/gm-base:8.9 -f iandsec-gm/Dockerfile-8 ./iandsec-gm
+docker build -t jackkke/gm-base:8.9-20240515 -f iandsec-gm/Dockerfile-8 ./iandsec-gm
+docker build -t jackkke/gm-base:9 -f iandsec-gm/Dockerfile-9 ./iandsec-gm
+docker build -t jackkke/gm-base:9-20240515 -f iandsec-gm/Dockerfile-9 ./iandsec-gm
+```
+### 推送镜像
+```shell
+docker push jackkke/gm-base:7.9
+docker push jackkke/gm-base:7.9-20240515
+docker push jackkke/gm-base:8.9
+docker push jackkke/gm-base:8.9-20240515
+docker push jackkke/gm-base:9
+docker push jackkke/gm-base:9-20240515
 ```
