@@ -1,10 +1,10 @@
 FROM oraclelinux:8.9
 LABEL maintainer="jackkke hangao1204@hotmail.com"
 WORKDIR /root/graalvm
-COPY apache-maven-3.9.6-bin.tar.gz ./
-COPY graalvm-jdk-21_linux-x64_bin.tar.gz ./
 RUN yum -y update  \
-    && yum -y install gcc glibc-devel zlib-devel  \
+    && yum -y install gcc glibc-devel zlib-devel wget  \
+    && wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz  \
+    && wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz  \
     && tar -zxf apache-maven-3.9.6-bin.tar.gz  \
     && tar -zxf graalvm-jdk-21_linux-x64_bin.tar.gz  \
     && rm -rf apache-maven-3.9.6-bin.tar.gz  \
