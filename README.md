@@ -38,3 +38,14 @@ docker push jackkke/openjdk:11.0.23-jdk-alpine
 docker push jackkke/openjdk:17.0.11-jdk-alpine
 docker push jackkke/openjdk:21.0.3-jdk-alpine
 ```
+## 构建 Iandsec
+### 构建镜像
+```shell
+docker build -t jackkke/iandsec-base:20240515 -f iandsec-rockylinux/Dockerfile .
+docker build -t jackkke/iandsec-base:20240515-minimal -f iandsec-rockylinux/Dockerfile-minimal .
+```
+### 推送镜像
+```shell
+docker push jackkke/iandsec-base:20240515
+docker push jackkke/iandsec-base:20240515-minimal
+```
