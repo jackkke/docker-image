@@ -1,4 +1,4 @@
-FROM rockylinux:9.3-minimal
+FROM rockylinux/rockylinux:9.4.20240523-minimal
 
 LABEL maintainer="jackkke hangao1204@hotmail.com"
 
