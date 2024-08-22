@@ -1,17 +1,18 @@
-FROM oraclelinux:8.9
+FROM oraclelinux:8-slim
 LABEL maintainer="jackkke hangao1204@hotmail.com"
 
-RUN yum -y update  \
-    && yum -y install gcc glibc-devel zlib-devel wget  \
-    && wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz  \
+RUN microdnf -y update  \
+    && microdnf -y install gcc glibc-devel zlib-devel wget gzip  \
+    && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz  \
     && wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz  \
-    && tar -zxf apache-maven-3.9.6-bin.tar.gz  \
+    && tar -zxf apache-maven-3.9.9-bin.tar.gz  \
     && tar -zxf graalvm-jdk-21_linux-x64_bin.tar.gz  \
-    && mv graalvm-jdk-21.0.3+7.1 /etc/alternatives/graalvm-jdk-21.0.3+7.1  \
-    && mv apache-maven-3.9.6 /etc/alternatives/apache-maven-3.9.6  \
-    && rm -rf apache-maven-3.9.6-bin.tar.gz  \
-    && rm -rf graalvm-jdk-21_linux-x64_bin.tar.gz
+    && mv graalvm-jdk-21.0.4+8.1 /etc/alternatives/graalvm-jdk-21.0.4+8.1  \
+    && mv apache-maven-3.9.9 /etc/alternatives/apache-maven-3.9.9  \
+    && rm -rf apache-maven-3.9.9-bin.tar.gz  \
+    && rm -rf graalvm-jdk-21_linux-x64_bin.tar.gz  \
+    && microdnf clean all
 
-ENV JAVA_HOME=/etc/alternatives/graalvm-jdk-21.0.3+7.1
-ENV MAVEN_HOME=/etc/alternatives/apache-maven-3.9.6
+ENV JAVA_HOME=/etc/alternatives/graalvm-jdk-21.0.4+8.1
+ENV MAVEN_HOME=/etc/alternatives/apache-maven-3.9.9
 ENV PATH=$JAVA_HOME/bin:$MAVEN_HOME/bin:$PATH
