@@ -19,8 +19,8 @@ RUN dnf makecache  \
 ENV LANG=zh_CN.UTF-8  \
     LC_ALL=zh_CN.UTF-8  \
     JAVA_HOME=/etc/alternatives/jre  \
-    PATH=${PATH}:${JAVA_HOME}/bin  \
+    PATH=${PATH}:/etc/alternatives/jre/bin  \
     JAVA_MAJOR=11.0  \
-    JAVA_VERSION=11.0.23.0.9  \
+    JAVA_VERSION=11.0.24.0.8  \
     MYSQL_MAJOR=8.0  \
     MYSQL_VERSION=8.0.36
