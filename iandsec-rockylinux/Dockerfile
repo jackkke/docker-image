@@ -9,11 +9,10 @@ RUN dnf makecache  \
     && dnf -y install wget \
     && wget https://openresty.org/package/rhel/openresty2.repo  \
     && mv openresty2.repo /etc/yum.repos.d/openresty.repo  \
-    && dnf -y install java-11-openjdk mysql-server openresty glibc-langpack-zh  \
+    && dnf -y install java-11-openjdk-headless mysql-server openresty glibc-langpack-zh  \
     && chown -R mysql:mysql /usr/libexec/mysqld  \
     && dnf -y remove wget  \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
-    && fc-cache -f -v  \
     && dnf -y clean all
 
 ENV LANG=zh_CN.UTF-8  \
