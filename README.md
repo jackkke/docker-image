@@ -11,6 +11,7 @@ pat_
 JHGmnyxmNTm5DkHMhnkYcx1Q2sI
 <- 错的
 # docker buildx create --use
+# docker buildx create --name container-builder --driver docker-container --use --bootstrap
 # docker run --privileged --rm tonistiigi/binfmt --install all
 ```
 
