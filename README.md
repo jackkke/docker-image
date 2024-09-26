@@ -11,7 +11,7 @@ pat_
 JHGmnyxmNTm5DkHMhnkYcx1Q2sI
 <- 错的
 # docker buildx create --use
-docker run --privileged --rm tonistiigi/binfmt --install all
+# docker run --privileged --rm tonistiigi/binfmt --install all
 ```
 
 ## 构建 OpenJDK 并推送
@@ -49,6 +49,9 @@ docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux9-sli
 # docker manifest create jackkke/graalvm-maven:21-oraclelinux7-slim jackkke/graalvm-maven:21-oraclelinux7-slim-amd64 jackkke/graalvm-maven:21-oraclelinux7-slim-arm64
 # docker manifest push jackkke/graalvm-maven:21-oraclelinux7-slim
 ```
+
+## 构建 盘古MariaDB
+docker build --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.11.9 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
 
 ## 清理
 
