@@ -54,6 +54,12 @@ docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux9-sli
 ## 构建 盘古MariaDB
 docker build --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.11.9 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
 
+
+## 构建 chat2db alpine
+docker build --build-arg VERSION=3.2.4 -t jackkke/chat2db:3.2.4-alpine -f chat2db/Dockerfile --push ./chat2db
+docker build --build-arg VERSION=3.2.4 -t jackkke/chat2db -f chat2db/Dockerfile --push ./chat2db
+
+
 ## 清理
 
 ```shell
