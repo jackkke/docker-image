@@ -1,7 +1,8 @@
-FROM mariadb:10.11.9
+ARG VERSION=10.11.9
+FROM mariadb:${VERSION}
 
 LABEL maintainer="jackkke" \
-    mariadb-version="10.11.9"
+    mariadb-version="${VERSION}"
 
 ENV MARIADB_ROOT_PASSWORD=venustech.tsoc.db.ROOT  \
     MARIADB_DATABASE=tsoc  \
