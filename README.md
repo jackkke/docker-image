@@ -57,8 +57,7 @@ docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd6
 
 
 ## 构建 chat2db alpine
-docker build --build-arg VERSION=3.2.4 -t jackkke/chat2db:3.2.4-alpine -f chat2db/Dockerfile --push ./chat2db
-docker build --build-arg VERSION=3.2.4 -t jackkke/chat2db -f chat2db/Dockerfile --push ./chat2db
+docker buildx build --build-arg VERSION=3.4.1 --platform linux/arm64,linux/amd64 -t jackkke/chat2db:3.4.1-alpine -t jackkke/chat2db -f chat2db/Dockerfile --push ./chat2db
 
 
 ## 清理
