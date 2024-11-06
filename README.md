@@ -36,17 +36,9 @@ docker build --platform linux/arm64,linux/amd64 -t jackkke/iandsec-base:20240902
 ## 构建 GM
 
 ```shell
-docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7-arm --push ./iandsec-gm
-docker build --platform linux/amd64 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7 --push ./iandsec-gm
-docker build --platform linux/amd64 -t jackkke/graalvm-maven:21-oraclelinux8-slim -f iandsec-gm/Dockerfile-8 --push ./iandsec-gm
-docker build --platform linux/amd64 -t jackkke/graalvm-maven:21-oraclelinux9-slim -f iandsec-gm/Dockerfile-9 --push ./iandsec-gm
-docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7-arm ./iandsec-gm
-docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux8-slim -f iandsec-gm/Dockerfile-8-arm --push ./iandsec-gm
-docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux9-slim -f iandsec-gm/Dockerfile-9-arm --push ./iandsec-gm
-# docker build --platform linux/arm64 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7-arm --push ./iandsec-gm
-# docker build --platform linux/amd64 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7 --push ./iandsec-gm
-# docker manifest create jackkke/graalvm-maven:21-oraclelinux7-slim jackkke/graalvm-maven:21-oraclelinux7-slim-amd64 jackkke/graalvm-maven:21-oraclelinux7-slim-arm64
-# docker manifest push jackkke/graalvm-maven:21-oraclelinux7-slim
+docker buildx build --platform linux/amd64 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7 --push ./iandsec-gm
+docker buildx build --build-arg ORACLELINUX_VERSION=8-slim --platform linux/amd64,linux/arm64/v8 -t jackkke/graalvm-maven:21-oraclelinux8-slim -f iandsec-gm/Dockerfile-8 --push ./iandsec-gm
+docker buildx build --build-arg ORACLELINUX_VERSION=9-slim --platform linux/amd64,linux/arm64/v8 -t jackkke/graalvm-maven:21-oraclelinux9-slim -f iandsec-gm/Dockerfile-8 --push ./iandsec-gm
 ```
 
 ## 构建 盘古MariaDB

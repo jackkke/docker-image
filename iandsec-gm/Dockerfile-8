@@ -1,25 +1,37 @@
-FROM oraclelinux:8-slim
+ARG ORACLELINUX_VERSION=8-slim
+FROM oraclelinux:${ORACLELINUX_VERSION}
 LABEL maintainer="jackkke hangao1204@hotmail.com"
+ARG TARGETPLATFORM
+ARG GRAALVM_NAME=graalvm-jdk-21.0.5_linux-x64_bin.tar.gz
+ARG MAVEN_NAME=apache-maven-3.9.9-bin.tar.gz
 
 WORKDIR /workspace
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
-RUN microdnf -y update  \
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+          export GRAALVM_NAME="graalvm-jdk-21.0.5_linux-aarch64_bin.tar.gz"; \
+        elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+          export GRAALVM_NAME="graalvm-jdk-21.0.5_linux-x64_bin.tar.gz"; \
+        else \
+          echo "Unsupported platform: $TARGETPLATFORM"; exit 1; \
+        fi  \
+    && microdnf -y update  \
     && microdnf -y install gcc glibc-devel zlib-devel wget gzip  \
     && chmod +x /usr/local/bin/docker-entrypoint.sh  \
-    && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz  \
-    && wget https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz  \
-    && tar -zxf apache-maven-3.9.9-bin.tar.gz  \
-    && tar -zxf graalvm-jdk-21_linux-x64_bin.tar.gz  \
-    && mv graalvm-jdk-21.0.4+8.1 /etc/alternatives/graalvm-jdk-21.0.4+8.1  \
-    && mv apache-maven-3.9.9 /etc/alternatives/apache-maven-3.9.9  \
-    && rm -rf apache-maven-3.9.9-bin.tar.gz  \
-    && rm -rf graalvm-jdk-21_linux-x64_bin.tar.gz  \
+    && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/${MAVEN_NAME}  \
+    && wget https://download.oracle.com/graalvm/21/archive/${GRAALVM_NAME}  \
+    && tar -zxf ${MAVEN_NAME} -C /etc/alternatives  \
+    && tar -zxf ${GRAALVM_NAME} -C /etc/alternatives \
+    && rm -f ${MAVEN_NAME}  \
+    && rm -f ${GRAALVM_NAME}  \
     && microdnf clean all
 
-    ENV JAR_NAME=test
+ENV JAVA_HOME=/etc/alternatives/graalvm-jdk-21.0.5+9.1
+ENV MAVEN_HOME=/etc/alternatives/apache-maven-3.9.9
+ENV PATH=$JAVA_HOME/bin/:$MAVEN_HOME/bin:$PATH
+ENV JAR_NAME=test
 
-    VOLUME ["/workspace","/root/.m2/settings.xml"]
-    
-    ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+VOLUME ["/workspace","/root/.m2/settings.xml"]
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
