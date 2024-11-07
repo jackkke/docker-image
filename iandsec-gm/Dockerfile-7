@@ -5,8 +5,14 @@ WORKDIR /workspace
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
-RUN yum -y update  \
-    && yum -y install oracle-graalvm-ce-release-el7  \
+RUN yum update -y  \
+    && echo "" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "[ol7_graalvm_community]" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "name=Oracle GraalVM Community for Oracle Linux \$releasever (\$basearch)" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "baseurl=https://yum\$ociregion.\$ocidomain/repo/OracleLinux/OL7/graalvm/community/\$basearch/" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "gpgcheck=1" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "enabled=1" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
     && yum -y install gcc glibc-devel zlib-devel wget gzip graalvm-community-21-jdk  \
     && chmod +x /usr/local/bin/docker-entrypoint.sh  \
     && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz  \

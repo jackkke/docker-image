@@ -1,35 +1,29 @@
-ARG ORACLELINUX_VERSION=8-slim
-FROM oraclelinux:${ORACLELINUX_VERSION}
+ARG ORACLELINUX_VERSION=8
+FROM oraclelinux:${ORACLELINUX_VERSION}-slim
 LABEL maintainer="jackkke hangao1204@hotmail.com"
-ARG TARGETPLATFORM
-ARG GRAALVM_NAME=graalvm-jdk-21.0.5_linux-x64_bin.tar.gz
-ARG MAVEN_NAME=apache-maven-3.9.9-bin.tar.gz
+ARG ORACLELINUX_VERSION=8
 
 WORKDIR /workspace
 
 COPY docker-entrypoint.sh /usr/local/bin/
 
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-          export GRAALVM_NAME="graalvm-jdk-21.0.5_linux-aarch64_bin.tar.gz"; \
-        elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-          export GRAALVM_NAME="graalvm-jdk-21.0.5_linux-x64_bin.tar.gz"; \
-        else \
-          echo "Unsupported platform: $TARGETPLATFORM"; exit 1; \
-        fi  \
-    && microdnf -y update  \
-    && microdnf -y install gcc glibc-devel zlib-devel wget gzip  \
+RUN microdnf update -y  \
+    && echo "" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && echo "[ol${ORACLELINUX_VERSION}_graalvm_community]" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && echo "name=Oracle GraalVM Community for Oracle Linux \$releasever (\$basearch)" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && echo "baseurl=https://yum\$ociregion.\$ocidomain/repo/OracleLinux/OL${ORACLELINUX_VERSION}/graalvm/community/\$basearch/" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && echo "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && echo "gpgcheck=1" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && echo "enabled=1" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
+    && microdnf -y install gcc glibc-devel zlib-devel wget gzip graalvm-community-21-jdk  \
     && chmod +x /usr/local/bin/docker-entrypoint.sh  \
-    && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/${MAVEN_NAME}  \
-    && wget https://download.oracle.com/graalvm/21/archive/${GRAALVM_NAME}  \
-    && tar -zxf ${MAVEN_NAME} -C /etc/alternatives  \
-    && tar -zxf ${GRAALVM_NAME} -C /etc/alternatives \
-    && rm -f ${MAVEN_NAME}  \
-    && rm -f ${GRAALVM_NAME}  \
+    && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz  \
+    && tar -zxf apache-maven-3.9.9-bin.tar.gz -C /etc/alternatives  \
+    && rm -f apache-maven-3.9.9-bin.tar.gz  \
     && microdnf clean all
 
-ENV JAVA_HOME=/etc/alternatives/graalvm-jdk-21.0.5+9.1
 ENV MAVEN_HOME=/etc/alternatives/apache-maven-3.9.9
-ENV PATH=$JAVA_HOME/bin/:$MAVEN_HOME/bin:$PATH
+ENV PATH=$MAVEN_HOME/bin:$PATH
 ENV JAR_NAME=test
 
 VOLUME ["/workspace","/root/.m2/settings.xml"]
