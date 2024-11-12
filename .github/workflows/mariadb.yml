@@ -38,5 +38,5 @@ jobs:
           push: true
           build-args: |
             VERSION=${{ github.event.inputs.mariadb_version }}
-          tags: jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }},jackkke/pangu-mariadb:${{ github.event.inputs.jdk_major }}
+          tags: jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }},jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_major }}
           file: Dockerfile
