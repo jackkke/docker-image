@@ -29,5 +29,5 @@ jobs:
           push: true
           build-args: |
             VERSION=${{ github.event.inputs.chat2db_version }}
-          tags: jackkke/pangu-mariadb:${{ github.event.inputs.chat2db_version }}-alpine,jackkke/chat2db
+          tags: jackkke/chat2db:${{ github.event.inputs.chat2db_version }}-alpine,jackkke/chat2db
           file: Dockerfile
