@@ -1,0 +1,51 @@
+name: Publish GraalVM Maven Image To Github
+
+on:
+  workflow_dispatch:
+    inputs:
+      oraclelinux_version:
+        description: '选择 OracleLinux 版本号'
+        required: true
+        type: choice
+        options:
+          - 7
+          - 8
+          - 9
+      jdk_version:
+        description: '输入 JDK 版本号'
+        required: true
+        default: '21.0.2'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: oraclelinux7
+        uses: docker/build-push-action@v6
+        if: ${{ github.event.inputs.oraclelinux_version == '7' }}
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "{{defaultContext}}:graalvm-maven"
+          push: true
+          tags: jackkke/graalvm-maven:${{ github.event.inputs.jdk_version }}-ol${{ github.event.inputs.oraclelinux_version }},jackkke/graalvm-maven:21-ol${{ github.event.inputs.oraclelinux_version }}
+          file: Dockerfile-7
+      - name: oraclelinux
+        uses: docker/build-push-action@v6
+        if: ${{ github.event.inputs.oraclelinux_version != '7' }}
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "{{defaultContext}}:graalvm-maven"
+          push: true
+          build-args: |
+            ORACLELINUX_VERSION=${{ github.event.inputs.oraclelinux_version }}
+          tags: jackkke/graalvm-maven:${{ github.event.inputs.jdk_version }}-ol${{ github.event.inputs.oraclelinux_version }},jackkke/graalvm-maven:21-ol${{ github.event.inputs.oraclelinux_version }}
+          file: Dockerfile
