@@ -36,7 +36,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           context: "{{defaultContext}}:pangu-mariadb"
           push: true
-          build-args: : |
+          build-args: |
             VERSION=${{ github.event.inputs.mariadb_version }}
           tags: jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }},jackkke/pangu-mariadb:${{ github.event.inputs.jdk_major }}
           file: Dockerfile
