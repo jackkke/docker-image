@@ -1,0 +1,18 @@
+FROM oraclelinux:7-slim
+LABEL maintainer="jackkke hangao1204@hotmail.com"
+
+RUN echo "" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "[ol7_graalvm_community]" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "name=Oracle GraalVM Community for Oracle Linux \$releasever (\$basearch)" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "baseurl=https://yum\$ociregion.\$ocidomain/repo/OracleLinux/OL7/graalvm/community/\$basearch/" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "gpgcheck=1" >> /etc/yum.repos.d/oracle-linux-ol7.repo  \
+    && echo "enabled=1" >> /etc/yum.repos.d/oracle-linux-ol7.repo
+
+RUN yum update -y  \
+    && yum -y install gcc glibc-devel zlib-devel wget gzip graalvm-community-21-jdk  \
+    && wget https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz  \
+    && tar -zxf apache-maven-3.9.9-bin.tar.gz -C /etc/alternatives  \
+    && ln -s /etc/alternatives/apache-maven-3.9.9/bin/mvn /bin/mvn  \
+    && rm -f apache-maven-3.9.9-bin.tar.gz  \
+    && yum clean all

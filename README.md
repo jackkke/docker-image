@@ -36,9 +36,11 @@ docker build --platform linux/arm64,linux/amd64 -t jackkke/iandsec-base:20240902
 ## 构建 GM
 
 ```shell
-docker buildx build --platform linux/amd64,linux/arm64/v8 -t jackkke/graalvm-maven:21-oraclelinux7-slim -f iandsec-gm/Dockerfile-7 --push ./iandsec-gm
-docker buildx build --build-arg ORACLELINUX_VERSION=8 --platform linux/amd64,linux/arm64/v8 -t jackkke/graalvm-maven:21-oraclelinux8-slim -f iandsec-gm/Dockerfile-8 --push ./iandsec-gm
-docker buildx build --build-arg ORACLELINUX_VERSION=9 --platform linux/amd64,linux/arm64/v8 -t jackkke/graalvm-maven:21-oraclelinux9-slim -f iandsec-gm/Dockerfile-8 --push ./iandsec-gm
+docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/graalvm-maven:21-ol7 -t jackkke/graalvm-maven:21.0.2-ol7 -f graalvm-maven/Dockerfile-7 --push ./graalvm-maven
+docker buildx build --build-arg ORACLELINUX_VERSION=8 --platform linux/amd64,linux/arm64 -t jackkke/graalvm-maven:21-ol8 -t jackkke/graalvm-maven:21.0.2-ol8 -f graalvm-maven/Dockerfile --push ./graalvm-maven
+docker buildx build --build-arg ORACLELINUX_VERSION=9 --platform linux/amd64,linux/arm64 -t jackkke/graalvm-maven:21-ol9 -t jackkke/graalvm-maven:21.0.2-ol9 -f graalvm-maven/Dockerfile --push ./graalvm-maven
+
+
 ```
 
 ## 构建 盘古MariaDB
