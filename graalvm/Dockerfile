@@ -11,8 +11,13 @@ RUN echo "" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
     && echo "gpgcheck=1" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
     && echo "enabled=1" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo
 
-RUN if [ "$ORACLELINUX_VERSION" -eq 7 ];then ln -s /usr/bin/yum /usr/bin/microdnf;fi
+RUN if [ "$ORACLELINUX_VERSION" -eq 7 ]; then \
+      ln -s /usr/bin/yum /usr/bin/microdnf; \
+      sed -i '/^\[ol7_optional_latest\]/,/^$/s/enabled=0/enabled=1/' /etc/yum.repos.d/oracle-linux-ol7.repo; \
+    else \
+      sed -i '/^\[ol${ORACLELINUX_VERSION}_codeready_builder\]/,/^$/s/enabled=0/enabled=1/' /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo; \
+    fi
 
 RUN microdnf update -y  \
-    && microdnf -y install gcc glibc-devel zlib-devel wget gzip graalvm-community-21-jdk  \
+    && microdnf -y install gcc glibc-devel zlib-devel wget gzip graalvm-community-21-jdk graalvm-community-21-native-image \
     && microdnf clean all
