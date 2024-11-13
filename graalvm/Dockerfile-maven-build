@@ -1,6 +1,6 @@
 ARG GRAALVM_VERSION=21.0.2
 ARG ORACLELINUX_VERSION=9
-FROM jackkke/graalvm-maven:${GRAALVM_VERSION}-ol${ORACLELINUX_VERSION}
+FROM jackkke/graalvm:${GRAALVM_VERSION}-ol${ORACLELINUX_VERSION}-maven
 LABEL maintainer="jackkke hangao1204@hotmail.com"
 
 WORKDIR /workspace
