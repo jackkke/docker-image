@@ -13,6 +13,6 @@ RUN echo "" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
 
 RUN if [ "$ORACLELINUX_VERSION" -eq 7 ];then ln -s /usr/bin/yum /usr/bin/microdnf;fi
 
-RUN if microdnf update -y  \
+RUN microdnf update -y  \
     && microdnf -y install gcc glibc-devel zlib-devel wget gzip graalvm-community-21-jdk  \
     && microdnf clean all
