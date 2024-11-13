@@ -35,3 +35,25 @@ jobs:
           tags: jackkke/graalvm:${{ github.event.inputs.jdk_version }}-ol${{ matrix.oracle_linux_version }},jackkke/graalvm:21-ol${{ matrix.oracle_linux_version }}
           file: Dockerfile
           push: true
+      - name: Build GraalVM Maven Image Oracle Linux ${{ matrix.oracle_linux_version }}
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "{{defaultContext}}:graalvm"
+          build-args: |
+            ORACLELINUX_VERSION=${{ matrix.oracle_linux_version }}
+            GRAALVM_VERSION=${{ github.event.inputs.jdk_version }}
+          tags: jackkke/graalvm:${{ github.event.inputs.jdk_version }}-ol${{ matrix.oracle_linux_version }}-maven,jackkke/graalvm:21-ol${{ matrix.oracle_linux_version }}-maven
+          file: Dockerfile-maven
+          push: true
+      - name: Build GraalVM Maven Build Image Oracle Linux ${{ matrix.oracle_linux_version }}
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "{{defaultContext}}:graalvm"
+          build-args: |
+            ORACLELINUX_VERSION=${{ matrix.oracle_linux_version }}
+            GRAALVM_VERSION=${{ github.event.inputs.jdk_version }}
+          tags: jackkke/graalvm:${{ github.event.inputs.jdk_version }}-ol${{ matrix.oracle_linux_version }}-build,jackkke/graalvm:21-ol${{ matrix.oracle_linux_version }}-build
+          file: Dockerfile-maven-build
+          push: true
