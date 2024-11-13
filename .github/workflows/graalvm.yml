@@ -1,16 +1,8 @@
-name: Publish GraalVM Maven Image To Github
+name: Publish GraalVM Image To Github
 
 on:
   workflow_dispatch:
     inputs:
-      oraclelinux_version:
-        description: '选择 OracleLinux 版本号'
-        required: true
-        type: choice
-        options:
-          - 7
-          - 8
-          - 9
       jdk_version:
         description: '输入 JDK 版本号'
         required: true
@@ -19,6 +11,9 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        oracle_linux_version: [ 7, 8, 9 ]
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -29,23 +24,14 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: oraclelinux7
+      - name: Build GraalVM Image Oracle Linux ${{ matrix.oracle_linux_version }}
         uses: docker/build-push-action@v6
-        if: ${{ github.event.inputs.oraclelinux_version == '7' }}
         with:
           platforms: linux/amd64,linux/arm64
-          context: "{{defaultContext}}:graalvm-maven"
-          push: true
-          tags: jackkke/graalvm-maven:${{ github.event.inputs.jdk_version }}-ol${{ github.event.inputs.oraclelinux_version }},jackkke/graalvm-maven:21-ol${{ github.event.inputs.oraclelinux_version }}
-          file: Dockerfile-7
-      - name: oraclelinux
-        uses: docker/build-push-action@v6
-        if: ${{ github.event.inputs.oraclelinux_version != '7' }}
-        with:
-          platforms: linux/amd64,linux/arm64
-          context: "{{defaultContext}}:graalvm-maven"
-          push: true
+          context: "{{defaultContext}}:graalvm"
           build-args: |
-            ORACLELINUX_VERSION=${{ github.event.inputs.oraclelinux_version }}
-          tags: jackkke/graalvm-maven:${{ github.event.inputs.jdk_version }}-ol${{ github.event.inputs.oraclelinux_version }},jackkke/graalvm-maven:21-ol${{ github.event.inputs.oraclelinux_version }}
+            ORACLELINUX_VERSION=${{ matrix.oracle_linux_version }}
+            GRAALVM_VERSION=${{ github.event.inputs.jdk_version }}
+          tags: jackkke/graalvm:${{ github.event.inputs.jdk_version }}-ol${{ matrix.oracle_linux_version }},jackkke/graalvm:21-ol${{ matrix.oracle_linux_version }}
           file: Dockerfile
+          push: true
