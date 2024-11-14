@@ -9,8 +9,11 @@ on:
         default: '21.0.2'
 
 jobs:
-  setup:
+  docker:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        oracle_linux_version: [ 7, 8, 9 ]
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -21,12 +24,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-  buildAndPush:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        oracle_linux_version: [ 7, 8, 9 ]
-    steps:
       - name: Build GraalVM Image Oracle Linux ${{ matrix.oracle_linux_version }}
         uses: docker/build-push-action@v6
         with:
