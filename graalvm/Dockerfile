@@ -13,7 +13,8 @@ RUN echo "" >> /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo  \
 
 RUN if [ "$ORACLELINUX_VERSION" -eq 7 ]; then \
       ln -s /usr/bin/yum /usr/bin/microdnf; \
-      sed -i "/^\[ol${ORACLELINUX_VERSION}_optional_latest\]/,/^$/s/enabled=0/enabled=1/" /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo; \
+      yum-config-manager --enable ol7_optional_latest; \
+      yum install -y oracle-softwarecollection-release-el7; \
     else \
       sed -i "/^\[ol${ORACLELINUX_VERSION}_codeready_builder\]/,/^$/s/enabled=0/enabled=1/" /etc/yum.repos.d/oracle-linux-ol${ORACLELINUX_VERSION}.repo; \
     fi
