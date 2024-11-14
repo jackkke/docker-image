@@ -27,7 +27,7 @@ jobs:
       - name: Build GraalVM Image Oracle Linux ${{ matrix.oracle_linux_version }}
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           context: "{{defaultContext}}:graalvm"
           build-args: |
             ORACLELINUX_VERSION=${{ matrix.oracle_linux_version }}
