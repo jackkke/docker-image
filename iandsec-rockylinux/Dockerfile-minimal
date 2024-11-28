@@ -6,12 +6,9 @@ COPY ./SimSun.ttf /usr/share/fonts/SimSun.ttf
 
 RUN microdnf makecache  \
     && microdnf -y upgrade  \
-    && microdnf -y install wget \
-    && wget https://openresty.org/package/rhel/openresty2.repo  \
-    && mv openresty2.repo /etc/yum.repos.d/openresty.repo  \
+    && curl -o /etc/yum.repos.d/openresty.repo https://openresty.org/package/rhel/openresty2.repo  \
     && microdnf -y install java-11-openjdk mysql-server openresty glibc-langpack-zh  \
     && chown -R mysql:mysql /usr/libexec/mysqld  \
-    && microdnf -y remove wget  \
     && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
     && fc-cache -f -v  \
     && microdnf -y clean all
