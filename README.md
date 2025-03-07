@@ -50,6 +50,24 @@ docker buildx build --build-arg VERSION=10.11.9 --platform linux/arm64,linux/amd
 docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:11.5.2 -t jackkke/pangu-mariadb:11.5 -t jackkke/pangu-mariadb:11 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
 ```
 
+## 构建 盘古 pnpm
+
+```shell
+docker buildx build --build-arg VERSION=10.5.26 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.5.26 -t jackkke/pangu-mariadb:10.5 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker buildx build --build-arg VERSION=10.6.19 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.6.19 -t jackkke/pangu-mariadb:10.6 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker buildx build --build-arg VERSION=10.11.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.11.9 -t jackkke/pangu-mariadb:10.11 -t jackkke/pangu-mariadb:10 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:11.5.2 -t jackkke/pangu-mariadb:11.5 -t jackkke/pangu-mariadb:11 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+```
+
+## 构建 盘古 gradle
+
+```shell
+docker buildx build --build-arg VERSION=10.5.26 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.5.26 -t jackkke/pangu-mariadb:10.5 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker buildx build --build-arg VERSION=10.6.19 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.6.19 -t jackkke/pangu-mariadb:10.6 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker buildx build --build-arg VERSION=10.11.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.11.9 -t jackkke/pangu-mariadb:10.11 -t jackkke/pangu-mariadb:10 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:11.5.2 -t jackkke/pangu-mariadb:11.5 -t jackkke/pangu-mariadb:11 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+```
+
 
 ## 构建 chat2db alpine
 
