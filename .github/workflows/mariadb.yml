@@ -17,6 +17,9 @@ on:
         required: true
         default: '10.5.26'
 
+permissions:
+  contents: write
+
 jobs:
   docker:
     runs-on: ubuntu-latest
