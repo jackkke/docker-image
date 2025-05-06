@@ -60,7 +60,7 @@ jobs:
             ✅ 镜像构建成功！
             - 主版本: `${{ github.event.inputs.mariadb_major }}`
             - 完整版本: `${{ github.event.inputs.mariadb_version }}`
-            - 推送镜像: `jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }}`,jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_major }}
+            - 推送镜像: `jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }}`,`jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_major }}`
             [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
