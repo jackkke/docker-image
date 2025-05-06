@@ -1,20 +1,29 @@
-ARG VERSION=10.11.9
+ARG VERSION
 FROM mariadb:${VERSION}
 
-LABEL maintainer="jackkke" \
-    mariadb-version="${VERSION}"
+ARG VERSION
+ARG MARIADB_ROOT_PASSWORD
+ARG MARIADB_DATABASE
+ARG MARIADB_USER
+ARG MARIADB_PASSWORD
 
-ENV MARIADB_ROOT_PASSWORD=venustech.tsoc.db.ROOT  \
-    MARIADB_DATABASE=tsoc  \
-    MARIADB_USER=tsoc  \
-    MARIADB_PASSWORD=fake.PWD.fool.4.U  \
-    LC_ALL=C.UTF-8  \
+LABEL maintainer="jackkke" \
+      mariadb-version="${VERSION}"
+
+ENV MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD} \
+    MARIADB_DATABASE=${MARIADB_DATABASE} \
+    MARIADB_USER=${MARIADB_USER} \
+    MARIADB_PASSWORD=${MARIADB_PASSWORD} \
+    LC_ALL=C.UTF-8 \
     LANG=C.UTF-8
-RUN echo '[mysqld]'                             > /etc/mysql/conf.d/custom.cnf  \
-    && echo 'lower_case_table_names=1'         >> /etc/mysql/conf.d/custom.cnf  \
-    && echo 'character-set-server=utf8'        >> /etc/mysql/conf.d/custom.cnf  \
-    && echo 'collation-server=utf8_general_ci' >> /etc/mysql/conf.d/custom.cnf  \
-    && echo '[client-server]'                  >> /etc/mysql/conf.d/custom.cnf  \
-    && echo 'port=3308'                        >> /etc/mysql/conf.d/custom.cnf
+
+RUN cat <<EOF > /etc/mysql/conf.d/custom.cnf
+[mysqld]
+lower_case_table_names=1
+character-set-server=utf8
+collation-server=utf8_general_ci
+[client-server]
+port=3308
+EOF
 
 EXPOSE 3308
