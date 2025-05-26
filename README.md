@@ -70,12 +70,18 @@ docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.1 -f pangu-gradle/
 
 ```shell
 docker buildx build --build-arg VERSION=3.4.1 --platform linux/arm64,linux/amd64 -t jackkke/chat2db:3.4.1-alpine -t jackkke/chat2db -f chat2db/Dockerfile --push ./chat2db
-````
+```
 
 ## 构建 盘古 clickhouse
 
 ```shell
 docker build --platform linux/amd64 -t jackkke/pangu-clickhouse:22.3.2.2-alpine -f pangu-clickhouse/Dockerfile --push ./pangu-clickhouse
+```
+
+## 构建 盘古 elasticsearch
+
+```shell
+docker buildx build --platform linux/arm64,linux/amd64 -t jackkke/pangu-elasticsearch:7.17.21 -f pangu-elasticsearch/Dockerfile --push ./pangu-elasticsearch
 ```
 
 

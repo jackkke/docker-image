@@ -1,1 +1,3 @@
 .idea/
+pangu-clickhouse/clickhouse-server/
+pangu-elasticsearch/config/
