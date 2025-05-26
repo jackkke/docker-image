@@ -1,10 +1,10 @@
-FROM azul/zulu-openjdk-alpine:8u432-jdk
+FROM azul/zulu-openjdk-alpine:8u452-jdk
 
 WORKDIR /pangu-umbrella
 
 ENV GRADLE_HOME=/opt/gradle
 
-ARG GRADLE_VERSION=7.6.4
+ARG GRADLE_VERSION=7.1
 
 RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip  \
     && unzip gradle-${GRADLE_VERSION}-bin.zip  \

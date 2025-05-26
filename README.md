@@ -62,10 +62,7 @@ docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd6
 ## 构建 盘古 gradle
 
 ```shell
-docker buildx build --build-arg VERSION=10.5.26 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.5.26 -t jackkke/pangu-mariadb:10.5 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
-docker buildx build --build-arg VERSION=10.6.19 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.6.19 -t jackkke/pangu-mariadb:10.6 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
-docker buildx build --build-arg VERSION=10.11.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:10.11.9 -t jackkke/pangu-mariadb:10.11 -t jackkke/pangu-mariadb:10 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
-docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd64 -t jackkke/pangu-mariadb:11.5.2 -t jackkke/pangu-mariadb:11.5 -t jackkke/pangu-mariadb:11 -f pangu-mariadb/Dockerfile --push ./pangu-mariadb
+docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.1 -f pangu-gradle/Dockerfile --push ./pangu-gradle
 ```
 
 
@@ -73,6 +70,12 @@ docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd6
 
 ```shell
 docker buildx build --build-arg VERSION=3.4.1 --platform linux/arm64,linux/amd64 -t jackkke/chat2db:3.4.1-alpine -t jackkke/chat2db -f chat2db/Dockerfile --push ./chat2db
+````
+
+## 构建 盘古 clickhouse
+
+```shell
+docker build --platform linux/amd64 -t jackkke/pangu-clickhouse:22.3.2.2-alpine -f pangu-clickhouse/Dockerfile --push ./pangu-clickhouse
 ```
 
 
