@@ -63,6 +63,7 @@ docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd6
 
 ```shell
 docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.1 -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.1-sp1 -f pangu-gradle/Dockerfile --push ./pangu-gradle
 ```
 
 
@@ -82,6 +83,12 @@ docker build --platform linux/amd64 -t jackkke/pangu-clickhouse:22.3.2.2-alpine 
 
 ```shell
 docker buildx build --platform linux/arm64,linux/amd64 -t jackkke/pangu-elasticsearch:7.17.21 -f pangu-elasticsearch/Dockerfile --push ./pangu-elasticsearch
+```
+
+## 构建 盘古 redis
+
+```shell
+docker buildx build --platform linux/arm64,linux/amd64 -t jackkke/pangu-redis:4.0.14-alpine -f pangu-redis/Dockerfile --push ./pangu-redis
 ```
 
 
