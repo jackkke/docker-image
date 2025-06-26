@@ -4,16 +4,18 @@ WORKDIR /pangu-umbrella
 
 ENV GRADLE_HOME=/opt/gradle
 
-ARG GRADLE_VERSION=7.1
+ARG GRADLE_VERSION=7.6.5
 
 RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip  \
     && unzip gradle-${GRADLE_VERSION}-bin.zip  \
     && rm -rf gradle-${GRADLE_VERSION}-bin.zip  \
     && mv "gradle-${GRADLE_VERSION}" "${GRADLE_HOME}/"  \
-    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle
+    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle  \
+    && mkdir -p /root/.gradle/caches
 
-VOLUME ["/pangu-umbrella", "/root/.gradle"]
+VOLUME ["/pangu-umbrella", "/root/.gradle/caches"]
 
-ENTRYPOINT ["sh", "-c", "gradle clean && exec $0 $@" ]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-CMD ["gradle", ":pangu:pangu-webres:war"]
+ENTRYPOINT ["/entrypoint.sh"]
