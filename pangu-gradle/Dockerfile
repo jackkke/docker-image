@@ -10,10 +10,9 @@ RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.
     && unzip gradle-${GRADLE_VERSION}-bin.zip  \
     && rm -rf gradle-${GRADLE_VERSION}-bin.zip  \
     && mv "gradle-${GRADLE_VERSION}" "${GRADLE_HOME}/"  \
-    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle  \
-    && mkdir -p /root/.gradle/caches
+    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle
 
-VOLUME ["/pangu-umbrella", "/root/.gradle/caches"]
+VOLUME ["/pangu-umbrella", "/root/.gradle"]
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
