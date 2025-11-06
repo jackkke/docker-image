@@ -18,12 +18,12 @@ ENV MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD} \
     LANG=C.UTF-8
 
 RUN cat <<EOF > /etc/mysql/conf.d/custom.cnf
+[client]
+port=3308
 [mysqld]
 lower_case_table_names=1
-character-set-server=utf8
-collation-server=utf8_general_ci
-[client-server]
-port=3308
+character-set-server=utf8mb4
+collation-server=utf8mb4_general_ci
 EOF
 
 EXPOSE 3308
