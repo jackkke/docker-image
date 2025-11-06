@@ -12,6 +12,7 @@ on:
           - 10.6
           - 10.11
           - 11.4
+          - 11.8
       mariadb_version:
         description: '输入 MariaDB 版本号'
         required: true
