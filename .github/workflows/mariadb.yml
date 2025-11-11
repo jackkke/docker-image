@@ -2,21 +2,8 @@ name: Publish MariaDB Image To Github
 
 on:
   workflow_dispatch:
-    inputs:
-      mariadb_major:
-        description: '选择 MariaDB 版本'
-        required: true
-        type: choice
-        options:
-          - 10.5
-          - 10.6
-          - 10.11
-          - 11.4
-          - 11.8
-      mariadb_version:
-        description: '输入 MariaDB 版本号'
-        required: true
-        default: '10.5.26'
+  schedule:
+    - cron: "0 * * * *"
 
 permissions:
   contents: write
@@ -24,7 +11,44 @@ permissions:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mariadb_major: [10.5, 10.6, 10.11, 11.4, 11.8]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Ensure version record file exists
+        run: |
+          mkdir -p .github
+          FILE=".github/mariadb_versions.json"
+          [ -f "$FILE" ] || echo "{}" > "$FILE"
+      - name: Check official MariaDB version
+        id: check_version
+        run: |
+          FILE=".github/mariadb_versions.json"
+          MAJOR=${{ matrix.mariadb_major }}
+          IMAGE="mariadb:$MAJOR"
+          echo "🔍 Checking $IMAGE ..."
+          docker pull $IMAGE >/dev/null
+          VERSION=$(docker inspect $IMAGE | jq -r '.[0].Config.Labels["org.opencontainers.image.version"]')
+          [ -z "$VERSION" ] || [ "$VERSION" = "null" ] && VERSION="unknown"
+          OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
+          if [ "$VERSION" != "$OLD" ]; then
+            echo "⚠️ $MAJOR updated: $OLD -> $VERSION"
+            jq --arg key "$MAJOR" --arg value "$VERSION" '.[$key]=$value' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
+          else
+            echo "✅ $MAJOR unchanged ($VERSION)"
+            exit 0
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Commit updated version record
+        run: |
+          FILE=".github/mariadb_versions.json"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          git commit -m "Update MariaDB version ${{ matrix.mariadb_major }} to ${{ steps.check_version.outputs.version }}"
+          git push
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -41,27 +65,23 @@ jobs:
           context: "{{defaultContext}}:pangu-mariadb"
           push: true
           build-args: |
-            VERSION=${{ github.event.inputs.mariadb_version }}
+            VERSION=${{ steps.check_version.outputs.version }}
             MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
             MARIADB_USER=tsoc
             MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
             MARIADB_DATABASE=tsoc
-          tags: jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }},jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_major }}
+          tags: jackkke/pangu-mariadb:${{ steps.check_version.outputs.version }},jackkke/pangu-mariadb:${{ matrix.mariadb_major }}
           file: Dockerfile
-  create_release:
-    needs: docker
-    runs-on: ubuntu-latest
-    steps:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: mariadb-${{ github.event.inputs.mariadb_version }}
-          name: MariaDB ${{ github.event.inputs.mariadb_version }}
+          tag_name: mariadb-${{ steps.check_version.outputs.version }}
+          name: MariaDB ${{ steps.check_version.outputs.version }}
           body: |
             ✅ 镜像构建成功！
-            - 主版本: `${{ github.event.inputs.mariadb_major }}`
-            - 完整版本: `${{ github.event.inputs.mariadb_version }}`
-            - 推送镜像: `jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_version }}`,`jackkke/pangu-mariadb:${{ github.event.inputs.mariadb_major }}`
+            - 主版本: `${{ matrix.mariadb_major }}`
+            - 完整版本: `${{ steps.check_version.outputs.version }}`
+            - 推送镜像: `jackkke/pangu-mariadb:${{ steps.check_version.outputs.version }}`,`jackkke/pangu-mariadb:${{ matrix.mariadb_major }}`
             [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
