@@ -17,15 +17,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Ensure version record file exists
-        run: |
-          mkdir -p .github
-          FILE=".github/mariadb_versions.json"
-          [ -f "$FILE" ] || echo "{}" > "$FILE"
       - name: Check official MariaDB version
         id: check_version
         run: |
           FILE=".github/mariadb_versions.json"
+          [ -f "$FILE" ] || echo "{}" > "$FILE"
           MAJOR=${{ matrix.mariadb_major }}
           IMAGE="mariadb:$MAJOR"
           echo "🔍 Checking $IMAGE ..."
@@ -35,20 +31,17 @@ jobs:
           OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
           if [ "$VERSION" != "$OLD" ]; then
             echo "⚠️ $MAJOR updated: $OLD -> $VERSION"
-            jq --arg key "$MAJOR" --arg value "$VERSION" '.[$key]=$value' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "✅ $MAJOR unchanged ($VERSION)"
             exit 0
           fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-      - name: Commit updated version record
-        run: |
-          FILE=".github/mariadb_versions.json"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$FILE"
-          git commit -m "Update MariaDB version ${{ matrix.mariadb_major }} to ${{ steps.check_version.outputs.version }}"
-          git push
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mariadb-${{ steps.check_version.outputs.version }}
+          path: /dev/null  # 上传空文件
+          retention-days: 1
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -85,3 +78,26 @@ jobs:
             [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Commit updated version record
+        run: |
+          FILE=".github/mariadb_versions.json"
+          [ -f "$FILE" ] || echo "{}" > "$FILE"
+          for f in artifacts/*; do
+            name=$(basename "$f")
+            VERSION=${name#mariadb-}
+            MAJOR="${VERSION%.*}"
+            echo "➡️ Building image for $version"
+            jq --arg key "$MAJOR" --arg value "$VERSION" '.[$key]=$value' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          git commit -m "Update MariaDB version"
+          git push
