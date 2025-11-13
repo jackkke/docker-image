@@ -110,23 +110,23 @@ jobs:
           context: "{{defaultContext}}:pangu-mariadb"
           push: true
           build-args: |
-            VERSION=$VERSION
+            VERSION=${{ env.VERSION }}
             MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
             MARIADB_USER=tsoc
             MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
             MARIADB_DATABASE=tsoc
-          tags: jackkke/pangu-mariadb:$VERSION,jackkke/pangu-mariadb:$MAJOR
+          tags: jackkke/pangu-mariadb:${{ env.VERSION }},jackkke/pangu-mariadb:${{ env.MAJOR }}
           file: Dockerfile
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: mariadb-$VERSION
-          name: MariaDB $VERSION
+          tag_name: mariadb-${{ env.VERSION }}
+          name: MariaDB ${{ env.VERSION }}
           body: |
             ✅ 镜像构建成功！
-            - 主版本: `$MAJOR`
-            - 完整版本: `$VERSION`
-            - 推送镜像: `jackkke/pangu-mariadb:$VERSION`,`jackkke/pangu-mariadb:$MAJOR`
+            - 主版本: `${{ env.MAJOR }}`
+            - 完整版本: `${{ env.VERSION }}`
+            - 推送镜像: `jackkke/pangu-mariadb:${{ env.VERSION }}`,`jackkke/pangu-mariadb:${{ env.MAJOR }}`
             [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
