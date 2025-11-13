@@ -60,6 +60,7 @@ jobs:
           FILE=".github/mariadb_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
           LIST=()
+          shopt -s nullglob
           for f in artifacts/*; do
             name=$(basename "$f")
             VERSION=${name#mariadb-}
