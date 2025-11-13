@@ -34,7 +34,7 @@ jobs:
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "✅ $MAJOR unchanged ($VERSION)"
-            exit 0
+            exit 78
           fi
       - name: upload artifact
         uses: actions/upload-artifact@v4
