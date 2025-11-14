@@ -76,7 +76,8 @@ docker buildx build --build-arg VERSION=3.4.1 --platform linux/arm64,linux/amd64
 ## 构建 盘古 clickhouse
 
 ```shell
-docker build --platform linux/amd64 -t jackkke/pangu-clickhouse:22.3.2.2-alpine -f pangu-clickhouse/Dockerfile --push ./pangu-clickhouse
+docker buildx build --build-arg VERSION=22.3.2.2-alpine --platform linux/amd64 -t jackkke/pangu-clickhouse:22.3.2.2-alpine -f pangu-clickhouse/Dockerfile --push ./pangu-clickhouse
+docker buildx build --build-arg VERSION=25.3.3.42-alpine --platform linux/arm64,linux/amd64 -t jackkke/pangu-clickhouse:25.3.3.42-alpine -f pangu-clickhouse/Dockerfile --push ./pangu-clickhouse
 ```
 
 ## 构建 盘古 elasticsearch

@@ -1,4 +1,4 @@
-ARG VERSION
+ARG VERSION=latest
 FROM clickhouse/clickhouse-server:${VERSION}
 
 COPY metadata/ /var/lib/clickhouse/metadata/
