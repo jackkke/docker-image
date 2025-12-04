@@ -112,9 +112,9 @@ jobs:
           push: true
           build-args: |
             VERSION=${{ env.VERSION }}
-            MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
+            MARIADB_ROOT_PASSWORD_HASH=${{ secrets.MARIADB_ROOT_PASSWORD_HASH }}
             MARIADB_USER=tsoc
-            MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
+            MARIADB_PASSWORD_HASH=${{ secrets.MARIADB_PASSWORD_HASH }}
             MARIADB_DATABASE=tsoc
           tags: jackkke/pangu-mariadb:${{ env.VERSION }},jackkke/pangu-mariadb:${{ env.MAJOR }}
           file: Dockerfile
