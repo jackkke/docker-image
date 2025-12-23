@@ -1,10 +1,11 @@
-FROM node:lts-alpine
+ARG NODE_VERSION=lts-alpine
+FROM node:${NODE_VERSION}
 
 WORKDIR /pangu-roof-admin
 
-ARG PNPM_VERSION=8.15.9
+ARG PNPM_VERSION=latest
 
-RUN npm install -g pnpm@$PNPM_VERSION  \
+RUN corepack enable && corepack prepare pnpm@$PNPM_VERSION --activate  \
     && pnpm config set registry http://192.168.12.88:10000/  \
     && pnpm config set store-dir /.pnpm-store
 
