@@ -65,11 +65,11 @@ jobs:
         run: |
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
-          echo "collect all changes"
-          for f in artifacts/*; do
-            echo "处理: $(basename "$f")"
+          cd artifacts
+          for f in openjdk-*; do
+            echo "处理: $f"
             [ -f "$f" ] || continue
-            echo "处理文件"
+            echo "解析版本号"
             if source "$f" 2>/dev/null; then
               jq --arg key "$MAJOR_VERSION" --arg value "$SHORT_VERSION" '.[$key]=$value' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
               echo "✅ 更新 JDK $MAJOR_VERSION -> $SHORT_VERSION"
