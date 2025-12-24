@@ -66,8 +66,10 @@ jobs:
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
           cd artifacts
+          ls -alh
           for f in openjdk-*; do
             echo "处理: $f"
+            cat "$f"
             [ -f "$f" ] || continue
             echo "解析版本号"
             if source "$f" 2>/dev/null; then
