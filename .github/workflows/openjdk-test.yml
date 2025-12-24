@@ -65,9 +65,7 @@ jobs:
         run: |
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
-          cd artifacts
-          ls -alh
-          for f in openjdk-*; do
+          for f in $(find . -type f -name 'openjdk-*.env'); do
             echo "处理: $f"
             ls -alh "$f"
             cat "$f"
