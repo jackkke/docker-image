@@ -37,7 +37,7 @@ jobs:
       - name: Create version info file
         if: ${{ steps.check_version.outputs.changed == 'true' }}
         run: |
-          cat > openjdk-${{ matrix.openjdk_major }} << EOF
+          cat > openjdk-${{ matrix.openjdk_major }}.env << EOF
           ALPINE_VERSION=${{ steps.check_version.outputs.alpine }}
           MAJOR_VERSION=${{ matrix.openjdk_major }}
           FULL_VERSION=${{ steps.check_version.outputs.full }}
@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openjdk-${{ matrix.openjdk_major }}
-          path: openjdk-${{ matrix.openjdk_major }}
+          path: openjdk-${{ matrix.openjdk_major }}.env
           retention-days: 1
   collect_and_commit:
     runs-on: ubuntu-latest
