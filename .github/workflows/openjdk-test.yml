@@ -50,9 +50,49 @@ jobs:
           name: openjdk-${{ matrix.openjdk_major }}
           path: openjdk-${{ matrix.openjdk_major }}.env
           retention-days: 1
-  collect_and_commit:
-    runs-on: ubuntu-latest
+  probe_artifacts:
     needs: check_versions
+    runs-on: ubuntu-latest
+    outputs:
+      has_artifacts: ${{ steps.collect.outputs.has_artifacts }}
+      matrix_json: ${{ steps.collect.outputs.matrix_json }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: openjdk-*
+      - id: collect
+        run: |
+          set -euo pipefail
+          matrix='[]'
+          while IFS= read -r f; do
+            unset ALPINE_VERSION MAJOR_VERSION FULL_VERSION SHORT_VERSION
+            source "$f"
+
+            matrix=$(jq \
+              --arg major  "$MAJOR_VERSION" \
+              --arg alpine "$ALPINE_VERSION" \
+              --arg short  "$SHORT_VERSION" \
+              --arg full   "$FULL_VERSION" \
+              '
+              . + [{
+                major:  $major,
+                alpine: $alpine,
+                short:  $short,
+                full:   $full
+              }]
+              ' <<<"$matrix")
+          done < <(find artifacts -type f -name 'openjdk-*.env')
+          if [ "$(jq length <<<"$matrix")" -gt 0 ]; then
+            echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "matrix_json=$(jq -c . <<<"$matrix")" >> "$GITHUB_OUTPUT"
+  collect_and_commit:
+    needs: probe_artifacts
+    runs-on: ubuntu-latest
+    if: needs.probe_artifacts.outputs.has_artifacts == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -61,24 +101,45 @@ jobs:
           path: artifacts
           pattern: openjdk-*
       - name: collect artifacts
-        if: success() && hashFiles('artifacts/openjdk-*') != ''
         run: |
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
-          for f in $(find . -type f -name 'openjdk-*.env'); do
-            echo "处理: $f"
-            ls -alh "$f"
-            cat "$f"
-            [ -f "$f" ] || continue
-            echo "解析版本号"
-            if source "$f" 2>/dev/null; then
-              jq --arg key "$MAJOR_VERSION" --arg value "$SHORT_VERSION" '.[$key]=$value' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
-              echo "✅ 更新 JDK $MAJOR_VERSION -> $SHORT_VERSION"
-            fi
-          done
-          tree
+          updates='${{ needs.probe_artifacts.outputs.matrix_json }}'
+          jq --argjson u "$updates" 'reduce u[] as $i (.; .[$i.major]=$i.short)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          cat "${FILE}"
+          jq -r '.[] | "✅ 更新 JDK \(.major) -> \(.short)"' <<<"$updates"
           # git config user.name "github-actions[bot]"
           # git config user.email "github-actions[bot]@users.noreply.github.com"
           # git add "$FILE"
           # git commit -m "Update OpenJDK versions" || echo "No changes to commit"
           # git push || echo "Push failed, possibly no changes"
+  build_images:
+    needs: probe_artifacts
+    runs-on: ubuntu-latest
+    if: needs.probe_artifacts.outputs.has_artifacts == 'true'
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.probe_artifacts.outputs.matrix_json) }}
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: openjdk
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "{{defaultContext}}:openjdk"
+          push: true
+          build-args: |
+            ALPINE_VERSION=${{ matrix.alpine }}
+            MAJOR_VERSION=${{ matrix.major }}
+            FULL_VERSION=${{ matrix.full }}
+            SHORT_VERSION=${{ matrix.short }}
+          tags: jackkke/openjdk:${{ matrix.major }}-jdk-test-alpine,jackkke/openjdk:test-${{ matrix.short }}-jdk-test-alpine
+          file: Dockerfile
