@@ -20,7 +20,7 @@ jobs:
           MAJOR=${{ matrix.openjdk_major }}
           docker pull alpine:latest >/dev/null
           ALPINE_VERSION=$(docker run --rm alpine:latest sh -c 'source /etc/os-release && echo $VERSION_ID')
-          OPENJDK_VERSION=$(docker run --rm alpine:latest sh -c 'apk update >/dev/null 2>&1 && apk search openjdk${MAJOR}-jdk 2>/dev/null | head -1')
+          OPENJDK_VERSION=$(docker run --rm -e MAJOR=$MAJOR alpine:latest sh -c 'apk update >/dev/null 2>&1 && apk search openjdk${MAJOR}-jdk 2>/dev/null | head -1')
           FULL_VERSION=$(echo "$OPENJDK_VERSION" | awk -F'-' '{print $3"-"$4}')
           SHORT_VERSION=$(echo "$OPENJDK_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
           OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
