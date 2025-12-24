@@ -37,7 +37,7 @@ jobs:
       - name: Create version info file
         if: ${{ steps.check_version.outputs.changed == 'true' }}
         run: |
-          cat > openjdk-${{ steps.check_version.outputs.short }} << EOF
+          cat > openjdk-${{ matrix.openjdk_major }} << EOF
           ALPINE_VERSION=${{ steps.check_version.outputs.alpine }}
           MAJOR_VERSION=${{ matrix.openjdk_major }}
           FULL_VERSION=${{ steps.check_version.outputs.full }}
@@ -47,8 +47,8 @@ jobs:
         if: ${{ steps.check_version.outputs.changed == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: openjdk-*
-          path: artifacts/
+          name: openjdk-${{ matrix.openjdk_major }}
+          path: openjdk-${{ matrix.openjdk_major }}
           retention-days: 1
   collect_and_commit:
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
           path: artifacts
           pattern: openjdk-*
       - name: collect artifacts
-        if: success() && hashFiles('artifacts/*.txt') != ''
+        if: success() && hashFiles('artifacts/openjdk-*') != ''
         run: |
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
