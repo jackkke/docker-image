@@ -2,6 +2,8 @@ name: Publish OpenJDK Image To DockerHub
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   check_versions:
@@ -108,11 +110,11 @@ jobs:
           jq --argjson u "$updates" 'reduce u[] as $i (.; .[$i.major]=$i.short)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
           cat "${FILE}"
           jq -r '.[] | "✅ 更新 JDK \(.major) -> \(.short)"' <<<"$updates"
-          # git config user.name "github-actions[bot]"
-          # git config user.email "github-actions[bot]@users.noreply.github.com"
-          # git add "$FILE"
-          # git commit -m "Update OpenJDK versions" || echo "No changes to commit"
-          # git push || echo "Push failed, possibly no changes"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          git commit -m "Update OpenJDK versions" || echo "No changes to commit"
+          git push || echo "Push failed, possibly no changes"
   build_images:
     needs: probe_artifacts
     runs-on: ubuntu-latest
@@ -130,6 +132,19 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: openjdk-jre
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "{{defaultContext}}:openjdk-jre"
+          push: true
+          build-args: |
+            ALPINE_VERSION=${{ matrix.alpine }}
+            MAJOR_VERSION=${{ matrix.major }}
+            FULL_VERSION=${{ matrix.full }}
+            SHORT_VERSION=${{ matrix.short }}
+          tags: jackkke/openjdk:${{ matrix.major }}-jre-alpine,jackkke/openjdk:${{ matrix.short }}-jre-alpine
+          file: Dockerfile
       - name: openjdk
         uses: docker/build-push-action@v6
         with:
@@ -141,5 +156,5 @@ jobs:
             MAJOR_VERSION=${{ matrix.major }}
             FULL_VERSION=${{ matrix.full }}
             SHORT_VERSION=${{ matrix.short }}
-          tags: jackkke/openjdk:${{ matrix.major }}-jdk-test-alpine,jackkke/openjdk:test-${{ matrix.short }}-jdk-test-alpine
+          tags: jackkke/openjdk:${{ matrix.major }}-jdk-alpine,jackkke/openjdk:${{ matrix.short }}-jdk-alpine
           file: Dockerfile
