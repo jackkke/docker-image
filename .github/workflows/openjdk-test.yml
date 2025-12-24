@@ -18,6 +18,7 @@ jobs:
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
           MAJOR=${{ matrix.openjdk_major }}
+          docker pull alpine:latest >/dev/null
           ALPINE_VERSION=$(docker run --rm alpine:latest sh -c 'source /etc/os-release && echo $VERSION_ID')
           OPENJDK_VERSION=$(docker run --rm alpine:latest sh -c 'apk update >/dev/null 2>&1 && apk search openjdk${MAJOR}-jdk 2>/dev/null | head -1')
           FULL_VERSION=$(echo "$OPENJDK_VERSION" | awk -F'-' '{print $3"-"$4}')
