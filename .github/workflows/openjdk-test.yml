@@ -31,29 +31,25 @@ jobs:
           OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
           if [ "$SHORT_VERSION" != "$OLD" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
+            cat > openjdk-${{ matrix.openjdk_major }}.json << EOF
+            {
+              "major": ${{ matrix.openjdk_major }},
+              "alpine": "${{ ALPINE_VERSION }}",
+              "short": "${{ SHORT_VERSION }}",
+              "full": "${{ FULL_VERSION }}"
+            }
+            EOF
             echo "⚠️ $MAJOR updated: $OLD -> $SHORT_VERSION"
-            echo "alpine=$ALPINE_VERSION" >> "$GITHUB_OUTPUT"
-            echo "full=$FULL_VERSION" >> "$GITHUB_OUTPUT"
-            echo "short=$SHORT_VERSION" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "✅ $MAJOR unchanged ($SHORT_VERSION)"
           fi
-      - name: Create version info file
-        if: ${{ steps.check_version.outputs.changed == 'true' }}
-        run: |
-          cat > openjdk-${{ matrix.openjdk_major }}.env << EOF
-          ALPINE_VERSION=${{ steps.check_version.outputs.alpine }}
-          MAJOR_VERSION=${{ matrix.openjdk_major }}
-          FULL_VERSION=${{ steps.check_version.outputs.full }}
-          SHORT_VERSION=${{ steps.check_version.outputs.short }}
-          EOF
       - name: upload artifact
         if: ${{ steps.check_version.outputs.changed == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: openjdk-${{ matrix.openjdk_major }}
-          path: openjdk-${{ matrix.openjdk_major }}.env
+          path: openjdk-${{ matrix.openjdk_major }}.json
           retention-days: 1
   probe_artifacts:
     needs: check_versions
@@ -68,32 +64,15 @@ jobs:
           pattern: openjdk-*
       - id: collect
         run: |
-          set -euo pipefail
-          matrix='[]'
-          while IFS= read -r f; do
-            unset ALPINE_VERSION MAJOR_VERSION FULL_VERSION SHORT_VERSION
-            source "$f"
-
-            matrix=$(jq \
-              --arg major  "$MAJOR_VERSION" \
-              --arg alpine "$ALPINE_VERSION" \
-              --arg short  "$SHORT_VERSION" \
-              --arg full   "$FULL_VERSION" \
-              '
-              . + [{
-                major:  $major,
-                alpine: $alpine,
-                short:  $short,
-                full:   $full
-              }]
-              ' <<<"$matrix")
-          done < <(find artifacts -type f -name 'openjdk-*.env')
-          if [ "$(jq length <<<"$matrix")" -gt 0 ]; then
-            echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
-          else
+          files=(artifacts/openjdk-*/openjdk-*.json)
+          if [ ${#files[@]} -eq 0 ] || [ ! -f "${files[0]}" ]; then
+            echo "matrix_json=[]" >> "$GITHUB_OUTPUT"
             echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
+          else
+            matrix_json=$(jq -s '.' "${files[@]}" | jq -c .)
+            echo "matrix_json=$matrix_json" >> "$GITHUB_OUTPUT"
+            echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
           fi
-          echo "matrix_json=$(jq -c . <<<"$matrix")" >> "$GITHUB_OUTPUT"
   collect_and_commit:
     needs: probe_artifacts
     runs-on: ubuntu-latest
@@ -101,17 +80,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          pattern: openjdk-*
       - name: collect artifacts
         run: |
           FILE=".github/openjdk_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
           updates='${{ needs.probe_artifacts.outputs.matrix_json }}'
-          jq --argjson u "$updates" 'reduce u[] as $i (.; .[$i.major]=$i.short)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
-          cat "${FILE}"
+          jq --argjson u "$updates" 'reduce $u[] as $i (.; .[$i.major]=$i.short)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
           jq -r '.[] | "✅ 更新 JDK \(.major) -> \(.short)"' <<<"$updates"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
