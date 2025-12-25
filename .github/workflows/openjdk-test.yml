@@ -38,7 +38,7 @@ jobs:
           fi
           cat > openjdk-${{ matrix.openjdk_major }}.json << EOF
           {
-            "major": ${{ matrix.openjdk_major }},
+            "major": "${{ matrix.openjdk_major }}",
             "alpine": "${ALPINE_VERSION}",
             "short": "${SHORT_VERSION}",
             "full": "${FULL_VERSION}"
