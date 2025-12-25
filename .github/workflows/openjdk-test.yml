@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
+permissions:
+  contents: write
+
 jobs:
   check_versions:
     runs-on: ubuntu-latest
@@ -158,3 +161,15 @@ jobs:
             SHORT_VERSION=${{ matrix.short }}
           tags: jackkke/openjdk:${{ matrix.major }}-jdk-alpine,jackkke/openjdk:${{ matrix.short }}-jdk-alpine
           file: Dockerfile
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: openjdk-${{ matrix.short }}
+          name: OpenJDK ${{ matrix.short }}
+          body: |
+            ✅ 镜像构建成功！
+            - 主版本: `${{ matrix.major }}`
+            - 完整版本: `${{ matrix.short }}`
+            - 推送JDK镜像: `jackkke/openjdk:${{ matrix.major }}-jdk-alpine,jackkke/openjdk:${{ matrix.short }}-jdk-alpine`
+            - 推送JRE镜像: `jackkke/openjdk:${{ matrix.major }}-jre-alpine,jackkke/openjdk:${{ matrix.short }}-jre-alpine`
+            [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
