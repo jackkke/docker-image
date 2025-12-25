@@ -31,19 +31,19 @@ jobs:
           OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
           if [ "$SHORT_VERSION" != "$OLD" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
-            cat > openjdk-${{ matrix.openjdk_major }}.json << EOF
-            {
-              "major": ${{ matrix.openjdk_major }},
-              "alpine": "${ALPINE_VERSION}",
-              "short": "${SHORT_VERSION}",
-              "full": "${FULL_VERSION}"
-            }
-            EOF
             echo "⚠️ $MAJOR updated: $OLD -> $SHORT_VERSION"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "✅ $MAJOR unchanged ($SHORT_VERSION)"
           fi
+          cat > openjdk-${{ matrix.openjdk_major }}.json << EOF
+          {
+            "major": ${{ matrix.openjdk_major }},
+            "alpine": "${ALPINE_VERSION}",
+            "short": "${SHORT_VERSION}",
+            "full": "${FULL_VERSION}"
+          }
+          EOF
       - name: upload artifact
         if: ${{ steps.check_version.outputs.changed == 'true' }}
         uses: actions/upload-artifact@v4
