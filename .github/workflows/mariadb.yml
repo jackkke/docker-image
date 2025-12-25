@@ -1,7 +1,6 @@
-name: Publish MariaDB Image To Github
+name: Publish MariaDB Image To DockerHub
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
 
@@ -30,63 +29,75 @@ jobs:
           [ -z "$VERSION" ] || [ "$VERSION" = "null" ] && VERSION="unknown"
           OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
           if [ "$VERSION" != "$OLD" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
             echo "⚠️ $MAJOR updated: $OLD -> $VERSION"
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           else
+            echo "changed=false" >> $GITHUB_OUTPUT
             echo "✅ $MAJOR unchanged ($VERSION)"
           fi
+          cat > mariadb-${{ matrix.mariadb_major }}.json << EOF
+          {
+            "major": "${{ matrix.mariadb_major }}",
+            "version": "${VERSION}",
+          }
+          EOF
       - name: upload artifact
-        if: ${{ steps.check_version.outputs.version != '' }}
+        if: ${{ steps.check_version.outputs.changed == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: mariadb-${{ steps.check_version.outputs.version }}
-          path: /dev/null  # 上传空文件
+          name: mariadb-${{ matrix.mariadb_major }}
+          path: mariadb-${{ matrix.mariadb_major }}.json
           retention-days: 1
-  collect_and_commit:
-    runs-on: ubuntu-latest
+  probe_artifacts:
     needs: check_versions
+    runs-on: ubuntu-latest
     outputs:
-      version_list: ${{ steps.collect.outputs.list }}
+      has_artifacts: ${{ steps.collect.outputs.has_artifacts }}
+      matrix_json: ${{ steps.collect.outputs.matrix_json }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
           pattern: mariadb-*
+      - id: collect
+        run: |
+          files=(artifacts/mariadb-*/mariadb-*.json)
+          if [ ${#files[@]} -eq 0 ] || [ ! -f "${files[0]}" ]; then
+            echo "matrix_json=[]" >> "$GITHUB_OUTPUT"
+            echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
+          else
+            matrix_json=$(jq -s '.' "${files[@]}" | jq -c .)
+            echo "matrix_json=$matrix_json" >> "$GITHUB_OUTPUT"
+            echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
+          fi
+  collect_and_commit:
+    needs: check_versions
+    runs-on: ubuntu-latest
+    if: needs.probe_artifacts.outputs.has_artifacts == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: collect artifacts
         id: collect
         run: |
           FILE=".github/mariadb_versions.json"
           [ -f "$FILE" ] || echo "{}" > "$FILE"
-          LIST=()
-          shopt -s nullglob
-          for f in artifacts/*; do
-            name=$(basename "$f")
-            VERSION=${name#mariadb-}
-            MAJOR="${VERSION%.*}"
-            LIST+=("$VERSION")
-            jq --arg key "$MAJOR" --arg value "$VERSION" '.[$key]=$value' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
-            echo "➡️ Updated $MAJOR -> $VERSION"
-          done
-          if [ ${#LIST[@]} -eq 0 ]; then
-            echo "list=[]" >> "$GITHUB_OUTPUT"
-          else
-            echo "list=$(printf '%s\n' "${LIST[@]}" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
-            # Git commit & push
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add "$FILE"
-            git commit -m "Update MariaDB versions" || echo "No changes to commit"
-            git push || echo "Push failed, possibly no changes"
-          fi
+          updates='${{ needs.probe_artifacts.outputs.matrix_json }}'
+          jq --argjson u "$updates" 'reduce $u[] as $i (.; .[$i.major]=$i.version)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          jq -r '.[] | "✅ 更新 MariaDB \(.major) -> \(.version)"' <<<"$updates"
+          # Git commit & push
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          git commit -m "Update MariaDB versions" || echo "No changes to commit"
+          git push || echo "Push failed, possibly no changes"
   build_images:
-    runs-on: ubuntu-latest
     needs: collect_and_commit
-    if: needs.collect_and_commit.outputs.version_list != '[]'
+    runs-on: ubuntu-latest
+    if: needs.probe_artifacts.outputs.has_artifacts == 'true'
     strategy:
       matrix:
-        version: ${{ fromJson(needs.collect_and_commit.outputs.version_list) }}
+        include: ${{ fromJson(needs.probe_artifacts.outputs.matrix_json) }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -97,13 +108,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Prepare version
-        id: prepare
-        run: |
-          VERSION=${{ matrix.version }}
-          MAJOR=${VERSION%.*}
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
       - name: pangu-mariadb
         uses: docker/build-push-action@v6
         with:
@@ -111,23 +115,21 @@ jobs:
           context: "{{defaultContext}}:pangu-mariadb"
           push: true
           build-args: |
-            VERSION=${{ env.VERSION }}
+            VERSION=${{ matrix.version }}
             MARIADB_ROOT_PASSWORD_HASH=${{ secrets.MARIADB_ROOT_PASSWORD_HASH }}
             MARIADB_USER=tsoc
             MARIADB_PASSWORD_HASH=${{ secrets.MARIADB_PASSWORD_HASH }}
             MARIADB_DATABASE=tsoc
-          tags: jackkke/pangu-mariadb:${{ env.VERSION }},jackkke/pangu-mariadb:${{ env.MAJOR }}
+          tags: jackkke/pangu-mariadb:${{ matrix.version }},jackkke/pangu-mariadb:${{ matrix.major }}
           file: Dockerfile
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: mariadb-${{ env.VERSION }}
-          name: MariaDB ${{ env.VERSION }}
+          tag_name: mariadb-${{ matrix.version }}
+          name: MariaDB ${{ matrix.version }} Image Released
           body: |
             ✅ 镜像构建成功！
-            - 主版本: `${{ env.MAJOR }}`
-            - 完整版本: `${{ env.VERSION }}`
-            - 推送镜像: `jackkke/pangu-mariadb:${{ env.VERSION }}`,`jackkke/pangu-mariadb:${{ env.MAJOR }}`
+            - 主版本: `${{ matrix.major }}`
+            - 完整版本: `${{ matrix.version }}`
+            - 推送镜像: `jackkke/pangu-mariadb:${{ matrix.version }}`,`jackkke/pangu-mariadb:${{ matrix.major }}`
             [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

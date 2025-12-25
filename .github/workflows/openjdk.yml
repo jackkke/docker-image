@@ -1,25 +1,103 @@
-name: Publish OpenJDK Image To Github
+name: Publish OpenJDK Image To DockerHub
 
 on:
-  workflow_dispatch:
-    inputs:
-      jdk_major:
-        description: '选择 JDK 版本'
-        required: true
-        type: choice
-        options:
-          - 8
-          - 11
-          - 17
-          - 21
-      jdk_version:
-        description: '输入 JDK 版本号'
-        required: true
-        default: '8.0.402'
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
 
 jobs:
-  docker:
+  check_versions:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        openjdk_major: [8, 11, 17, 21, 25]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Get Official Version
+        id: check_version
+        run: |
+          FILE=".github/openjdk_versions.json"
+          [ -f "$FILE" ] || echo "{}" > "$FILE"
+          MAJOR=${{ matrix.openjdk_major }}
+          docker pull alpine:latest >/dev/null
+          ALPINE_VERSION=$(docker run --rm alpine:latest sh -c 'source /etc/os-release && echo $VERSION_ID')
+          OPENJDK_VERSION=$(docker run --rm -e MAJOR=$MAJOR alpine:latest sh -c 'apk update >/dev/null 2>&1 && apk search openjdk${MAJOR}-jdk 2>/dev/null | head -1')
+          FULL_VERSION=$(echo "$OPENJDK_VERSION" | awk -F'-' '{print $3"-"$4}')
+          SHORT_VERSION=$(echo "$OPENJDK_VERSION" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          OLD=$(jq -r --arg key "$MAJOR" '.[$key] // ""' "$FILE")
+          if [ "$SHORT_VERSION" != "$OLD" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "⚠️ $MAJOR updated: $OLD -> $SHORT_VERSION"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "✅ $MAJOR unchanged ($SHORT_VERSION)"
+          fi
+          cat > openjdk-${{ matrix.openjdk_major }}.json << EOF
+          {
+            "major": "${{ matrix.openjdk_major }}",
+            "alpine": "${ALPINE_VERSION}",
+            "short": "${SHORT_VERSION}",
+            "full": "${FULL_VERSION}"
+          }
+          EOF
+      - name: upload artifact
+        if: ${{ steps.check_version.outputs.changed == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: openjdk-${{ matrix.openjdk_major }}
+          path: openjdk-${{ matrix.openjdk_major }}.json
+          retention-days: 1
+  probe_artifacts:
+    needs: check_versions
+    runs-on: ubuntu-latest
+    outputs:
+      has_artifacts: ${{ steps.collect.outputs.has_artifacts }}
+      matrix_json: ${{ steps.collect.outputs.matrix_json }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: openjdk-*
+      - id: collect
+        run: |
+          files=(artifacts/openjdk-*/openjdk-*.json)
+          if [ ${#files[@]} -eq 0 ] || [ ! -f "${files[0]}" ]; then
+            echo "matrix_json=[]" >> "$GITHUB_OUTPUT"
+            echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
+          else
+            matrix_json=$(jq -s '.' "${files[@]}" | jq -c .)
+            echo "matrix_json=$matrix_json" >> "$GITHUB_OUTPUT"
+            echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
+          fi
+  collect_and_commit:
+    needs: probe_artifacts
+    runs-on: ubuntu-latest
+    if: needs.probe_artifacts.outputs.has_artifacts == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: collect artifacts
+        run: |
+          FILE=".github/openjdk_versions.json"
+          [ -f "$FILE" ] || echo "{}" > "$FILE"
+          updates='${{ needs.probe_artifacts.outputs.matrix_json }}'
+          jq --argjson u "$updates" 'reduce $u[] as $i (.; .[$i.major]=$i.short)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          jq -r '.[] | "✅ 更新 JDK \(.major) -> \(.short)"' <<<"$updates"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          git commit -m "Update OpenJDK versions" || echo "No changes to commit"
+          git push || echo "Push failed, possibly no changes"
+  build_images:
+    needs: probe_artifacts
+    runs-on: ubuntu-latest
+    if: needs.probe_artifacts.outputs.has_artifacts == 'true'
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.probe_artifacts.outputs.matrix_json) }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -30,19 +108,41 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: jre
+      - name: openjdk-jre
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
-          context: "{{defaultContext}}:openjdk-jre/${{ github.event.inputs.jdk_major }}"
+          context: "{{defaultContext}}:openjdk-jre"
           push: true
-          tags: jackkke/openjdk:${{ github.event.inputs.jdk_version }}-jre-alpine,jackkke/openjdk:${{ github.event.inputs.jdk_major }}-jre-alpine
+          build-args: |
+            ALPINE_VERSION=${{ matrix.alpine }}
+            MAJOR_VERSION=${{ matrix.major }}
+            FULL_VERSION=${{ matrix.full }}
+            SHORT_VERSION=${{ matrix.short }}
+          tags: jackkke/openjdk:${{ matrix.major }}-jre-alpine,jackkke/openjdk:${{ matrix.short }}-jre-alpine
           file: Dockerfile
-      - name: jdk
+      - name: openjdk
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
-          context: "{{defaultContext}}:openjdk/${{ github.event.inputs.jdk_major }}"
+          context: "{{defaultContext}}:openjdk"
           push: true
-          tags: jackkke/openjdk:${{ github.event.inputs.jdk_version }}-jdk-alpine,jackkke/openjdk:${{ github.event.inputs.jdk_major }}-jdk-alpine
+          build-args: |
+            ALPINE_VERSION=${{ matrix.alpine }}
+            MAJOR_VERSION=${{ matrix.major }}
+            FULL_VERSION=${{ matrix.full }}
+            SHORT_VERSION=${{ matrix.short }}
+          tags: jackkke/openjdk:${{ matrix.major }}-jdk-alpine,jackkke/openjdk:${{ matrix.short }}-jdk-alpine
           file: Dockerfile
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: openjdk-${{ matrix.short }}
+          name: OpenJDK ${{ matrix.short }}
+          body: |
+            ✅ 镜像构建成功！
+            - 主版本: `${{ matrix.major }}`
+            - 完整版本: `${{ matrix.short }}`
+            - 推送JDK镜像: `jackkke/openjdk:${{ matrix.major }}-jdk-alpine,jackkke/openjdk:${{ matrix.short }}-jdk-alpine`
+            - 推送JRE镜像: `jackkke/openjdk:${{ matrix.major }}-jre-alpine,jackkke/openjdk:${{ matrix.short }}-jre-alpine`
+            [查看构建日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
