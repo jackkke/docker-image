@@ -1,6 +1,7 @@
 name: Publish OpenJDK Image To DockerHub
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
 
