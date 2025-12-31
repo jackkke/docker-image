@@ -10,20 +10,15 @@ dckr_
 pat_
 JHGmnyxmNTm5DkHMhnkYcx1Q2sI
 <- 错的
-docker buildx create --use
+docker run --privileged --rm tonistiigi/binfmt --install all
+docker buildx create --name multiarch --use --bootstrap
 ```
 
 ## 构建 OpenJDK 并推送
 
 ```shell
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:8.0.402-jdk-alpine -t jackkke/openjdk:8-jdk-alpine -f openjdk/8/Dockerfile --push ./openjdk/8
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:8.0.402-jre-alpine -t jackkke/openjdk:8-jre-alpine -f openjdk-jre/8/Dockerfile --push ./openjdk-jre/8
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:11.0.25-jdk-alpine -t jackkke/openjdk:11-jdk-alpine -f openjdk/11/Dockerfile --push ./openjdk/11
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:11.0.25-jre-alpine -t jackkke/openjdk:11-jre-alpine -f openjdk-jre/11/Dockerfile --push ./openjdk-jre/11
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:17.0.13-jdk-alpine -t jackkke/openjdk:17-jdk-alpine -f openjdk/17/Dockerfile --push ./openjdk/17
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:17.0.13-jre-alpine -t jackkke/openjdk:17-jre-alpine -f openjdk-jre/17/Dockerfile --push ./openjdk-jre/17
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:21.0.5-jdk-alpine -t jackkke/openjdk:21-jdk-alpine -f openjdk/21/Dockerfile --push ./openjdk/21
-docker buildx build --platform linux/amd64,linux/arm64 -t jackkke/openjdk:21.0.5-jre-alpine -t jackkke/openjdk:21-jre-alpine -f openjdk-jre/21/Dockerfile --push ./openjdk-jre/21
+docker buildx build --build-arg ALPINE_VERSION=3.23.2 --build-arg MAJOR_VERSION=8 --build-arg FULL_VERSION=8.452.09-r0 --build-arg SHORT_VERSION=8.452.09 --platform linux/amd64,linux/arm64,linux/arm/v7 -t jackkke/openjdk:8.452.09-jdk-alpine -t jackkke/openjdk:8-jdk-alpine -f openjdk/Dockerfile --push ./openjdk
+docker buildx build --build-arg ALPINE_VERSION=3.23.2 --build-arg MAJOR_VERSION=8 --build-arg FULL_VERSION=8.452.09-r0 --build-arg SHORT_VERSION=8.452.09 --platform linux/amd64,linux/arm64,linux/arm/v7 -t jackkke/openjdk:8.452.09-jre-alpine -t jackkke/openjdk:8-jre-alpine -f openjdk-jre/Dockerfile --push ./openjdk-jre
 ```
 
 ## 构建 Iandsec
