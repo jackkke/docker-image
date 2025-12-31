@@ -72,7 +72,7 @@ jobs:
             echo "has_artifacts=true" >> "$GITHUB_OUTPUT"
           fi
   collect_and_commit:
-    needs: check_versions
+    needs: probe_artifacts
     runs-on: ubuntu-latest
     if: needs.probe_artifacts.outputs.has_artifacts == 'true'
     steps:
@@ -93,7 +93,7 @@ jobs:
           git commit -m "Update MariaDB versions" || echo "No changes to commit"
           git push || echo "Push failed, possibly no changes"
   build_images:
-    needs: collect_and_commit
+    needs: probe_artifacts
     runs-on: ubuntu-latest
     if: needs.probe_artifacts.outputs.has_artifacts == 'true'
     strategy:
