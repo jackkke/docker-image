@@ -16,7 +16,7 @@ jobs:
         mariadb_major: [10.5, 10.6, 10.11, 11.4, 11.8]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Check official MariaDB version
         id: check_version
         run: |
@@ -44,7 +44,7 @@ jobs:
           EOF
       - name: upload artifact
         if: ${{ steps.check_version.outputs.changed == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: mariadb-${{ matrix.mariadb_major }}
           path: mariadb-${{ matrix.mariadb_major }}.json
@@ -56,13 +56,23 @@ jobs:
       has_artifacts: ${{ steps.collect.outputs.has_artifacts }}
       matrix_json: ${{ steps.collect.outputs.matrix_json }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           pattern: mariadb-*
       - id: collect
         run: |
           files=(artifacts/mariadb-*/mariadb-*.json)
+          echo "Number of files: ${#files[@]}"
+          for i in "${!files[@]}"; do
+            echo "[$i] ${files[$i]}"
+            echo "Content:"
+            cat "${files[$i]}"
+            echo ""
+            echo "Validate:"
+            jq . "${files[$i]}" || echo "Invalid JSON"
+            echo "---"
+          done
           if [ ${#files[@]} -eq 0 ] || [ ! -f "${files[0]}" ]; then
             echo "matrix_json=[]" >> "$GITHUB_OUTPUT"
             echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
@@ -77,7 +87,7 @@ jobs:
     if: needs.probe_artifacts.outputs.has_artifacts == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: collect artifacts
         id: collect
         run: |
@@ -101,16 +111,16 @@ jobs:
         include: ${{ fromJson(needs.probe_artifacts.outputs.matrix_json) }}
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: pangu-mariadb
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           platforms: linux/amd64,linux/arm64
           context: "{{defaultContext}}:pangu-mariadb"
@@ -124,7 +134,7 @@ jobs:
           tags: jackkke/pangu-mariadb:${{ matrix.version }},jackkke/pangu-mariadb:${{ matrix.major }}
           file: Dockerfile
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: mariadb-${{ matrix.version }}
           name: MariaDB ${{ matrix.version }} Image Released
