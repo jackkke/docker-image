@@ -39,7 +39,7 @@ jobs:
           cat > mariadb-${{ matrix.mariadb_major }}.json << EOF
           {
             "major": "${{ matrix.mariadb_major }}",
-            "version": "${VERSION}",
+            "version": "${VERSION}"
           }
           EOF
       - name: upload artifact
@@ -63,16 +63,6 @@ jobs:
       - id: collect
         run: |
           files=(artifacts/mariadb-*/mariadb-*.json)
-          echo "Number of files: ${#files[@]}"
-          for i in "${!files[@]}"; do
-            echo "[$i] ${files[$i]}"
-            echo "Content:"
-            cat "${files[$i]}"
-            echo ""
-            echo "Validate:"
-            jq . "${files[$i]}" || echo "Invalid JSON"
-            echo "---"
-          done
           if [ ${#files[@]} -eq 0 ] || [ ! -f "${files[0]}" ]; then
             echo "matrix_json=[]" >> "$GITHUB_OUTPUT"
             echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
