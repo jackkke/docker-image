@@ -7,8 +7,18 @@ case "$TASK" in
   ddl) GRADLE_TASK=":pangu:compileDDL" ;;
   *) GRADLE_TASK="$TASK" ;;
 esac
-if [ "${CLEAN:-true}" = "false" ] || [ "${CLEAN:-true}" = "FALSE" ] || [ "${CLEAN:-true}" = "0" ]; then
-  exec gradle $GRADLE_TASK --no-daemon
-else
-  exec gradle clean $GRADLE_TASK --no-daemon
-fi
+# -----------------------------
+# 拼接所有 Gradle 参数
+# -----------------------------
+GRADLE_ARGS=""
+CLEAN_FLAG=$(echo "${CLEAN:-true}" | tr '[:upper:]' '[:lower:]')
+[ "$CLEAN_FLAG" != "false" ] && [ "$CLEAN_FLAG" != "0" ] && GRADLE_ARGS="$GRADLE_ARGS clean"
+GRADLE_ARGS="$GRADLE_ARGS $GRADLE_TASK"
+# Artifactory
+[ -n "$ARTIFACTORY_HOST" ] && GRADLE_ARGS="$GRADLE_ARGS -Partifactory_host=$ARTIFACTORY_HOST"
+# daemon 控制（默认关闭 daemon）
+[ "$(echo "${DAEMON:-false}" | tr '[:upper:]' '[:lower:]')" != "true" ] && GRADLE_ARGS="$GRADLE_ARGS --no-daemon"
+# -----------------------------
+# 执行
+# -----------------------------
+exec gradle $GRADLE_ARGS

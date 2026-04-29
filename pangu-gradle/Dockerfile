@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk-alpine:8u482-jdk
+FROM azul/zulu-openjdk-alpine:8u492-jdk
 
 WORKDIR /pangu-umbrella
 
