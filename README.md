@@ -55,7 +55,7 @@ docker buildx build --build-arg NODE_VERSION=24.12.0-alpine --build-arg PNPM_VER
 
 ```shell
 docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.1 -f pangu-gradle/Dockerfile --push ./pangu-gradle
-docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.1-sp1 -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker build --platform linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260429 -f pangu-gradle/Dockerfile --push ./pangu-gradle
 ```
 
 
