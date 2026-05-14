@@ -87,6 +87,12 @@ docker buildx build --platform linux/arm64,linux/amd64 -t jackkke/pangu-elastics
 docker buildx build --platform linux/arm64,linux/amd64 -t jackkke/pangu-redis:4.0.14-alpine -f pangu-redis/Dockerfile --push ./pangu-redis
 ```
 
+## 构建 pangu-devcontainers
+
+```shell
+docker buildx build --platform linux/arm64,linux/amd64 -t jackkke/pangu-devcontainers:gradle-7.6.6-20260515 -f pangu-devcontainers/gradle/Dockerfile --push ./pangu-devcontainers/gradle/
+```
+
 
 ## 清理
 
