@@ -1,7 +1,7 @@
 #!/bin/sh
 TASK=${1:-war}
 
-debug="--info --stacktrace"
+debug="--stacktrace"
 
 case "$TASK" in
   war) GRADLE_TASK=":pangu:pangu-webres:war ${debug}" ;;
