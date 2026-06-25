@@ -1,10 +1,12 @@
 #!/bin/sh
 TASK=${1:-war}
 
+debug="--info --stacktrace"
+
 case "$TASK" in
-  war) GRADLE_TASK=":pangu:pangu-webres:war" ;;
-  oem) GRADLE_TASK="assemblePainting" ;;
-  ddl) GRADLE_TASK=":pangu:compileDDL" ;;
+  war) GRADLE_TASK=":pangu:pangu-webres:war ${debug}" ;;
+  oem) GRADLE_TASK="assemblePainting ${debug}" ;;
+  ddl) GRADLE_TASK=":pangu:compileDDL ${debug}" ;;
   *) exec gradle "$@";;
 esac
 shift 1
