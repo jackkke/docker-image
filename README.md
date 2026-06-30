@@ -55,10 +55,10 @@ docker buildx build --build-arg NODE_VERSION=24.12.0-alpine --build-arg PNPM_VER
 
 ```shell
 docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk -f pangu-gradle/Dockerfile-ubuntu --push ./pangu-gradle
-docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk-alpine -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk-alpine -f pangu-gradle/Dockerfile-alpine --push ./pangu-gradle
 
-docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk-alpine --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260506-alpine -f pangu-gradle/Dockerfile --push ./pangu-gradle
-docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260506 -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk-alpine --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260630-alpine -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260630 -f pangu-gradle/Dockerfile --push ./pangu-gradle
 ```
 
 
