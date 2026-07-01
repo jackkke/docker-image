@@ -48,17 +48,17 @@ docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd6
 ## 构建 盘古 pnpm
 
 ```shell
-docker buildx build --build-arg NODE_VERSION=24.18.0 --build-arg PNPM_VERSION=8.15.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-pnpm:8.15.9-20250630 -f pangu-pnpm/Dockerfile --push ./pangu-pnpm
+docker buildx build --build-arg NODE_VERSION=24.18.0-bookworm-slim --build-arg PNPM_VERSION=8.15.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-pnpm:8.15.9-20250701 -f pangu-pnpm/Dockerfile --push ./pangu-pnpm
 ```
 
 ## 构建 盘古 gradle
 
 ```shell
-docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk -f pangu-gradle/Dockerfile-ubuntu --push ./pangu-gradle
-docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk-alpine -f pangu-gradle/Dockerfile-alpine --push ./pangu-gradle
+docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk-260701 -f pangu-gradle/Dockerfile-ubuntu --push ./pangu-gradle
+docker buildx build --build-arg ZULU_VERSION=8u492-jdk --build-arg GRADLE_VERSION=7.6.6 --platform linux/arm64,linux/amd64 -t jackkke/gradle:7.6.6-zulu-8u492-jdk-260701-alpine -f pangu-gradle/Dockerfile-alpine --push ./pangu-gradle
 
-docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk-alpine --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260630-alpine -f pangu-gradle/Dockerfile --push ./pangu-gradle
-docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260630 -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk-260701-alpine --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260701-alpine -f pangu-gradle/Dockerfile --push ./pangu-gradle
+docker buildx build --build-arg VERSION=7.6.6-zulu-8u492-jdk-260701 --platform linux/arm64,linux/amd64 -t jackkke/pangu-gradle:7.6.6-20260701 -f pangu-gradle/Dockerfile --push ./pangu-gradle
 ```
 
 

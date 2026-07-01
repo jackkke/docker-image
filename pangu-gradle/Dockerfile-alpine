@@ -1,12 +1,19 @@
 ARG ZULU_VERSION=8u492-jdk
+FROM azul/zulu-openjdk-alpine:${ZULU_VERSION} AS build
+
+ARG GRADLE_VERSION=7.6.6
+ENV GRADLE_HOME=/opt/gradle
+
+RUN apk add --no-cache unzip \
+    && wget -O /tmp/gradle.zip \
+       https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
+    && unzip /tmp/gradle.zip -d /tmp \
+    && mv /tmp/gradle-${GRADLE_VERSION} ${GRADLE_HOME} \
+    && rm -rf /tmp/gradle.zip
+
 FROM azul/zulu-openjdk-alpine:${ZULU_VERSION}
 
 ENV GRADLE_HOME=/opt/gradle
+ENV PATH="${GRADLE_HOME}/bin:${PATH}"
 
-ARG GRADLE_VERSION=7.6.6
-
-RUN wget https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip  \
-    && unzip gradle-${GRADLE_VERSION}-bin.zip  \
-    && rm -rf gradle-${GRADLE_VERSION}-bin.zip  \
-    && mv "gradle-${GRADLE_VERSION}" "${GRADLE_HOME}/"  \
-    && ln -s "${GRADLE_HOME}/bin/gradle" /usr/bin/gradle
+COPY --from=build /opt/gradle /opt/gradle
