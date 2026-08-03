@@ -12,6 +12,7 @@ case "$TASK" in
 esac
 shift 1
 ARGS="$GRADLE_TASK"
-[ "${CLEAN:-false}" = "true" ] && ARGS="clean $ARGS"
+[ "${CLEAN:-true}" = "true" ] && ARGS="clean $ARGS"
 [ -n "$ARTIFACTORY_HOST" ] && ARGS="$ARGS -Partifactory_host=$ARTIFACTORY_HOST"
+sed -i -E "s|url ['\"]https://maven\\.aliyun\\.com[^'\"]*['\"]|url 'http://192.168.75.90:8081/repository/maven-public'\n            allowInsecureProtocol = true|g" pangu/thdk-dist-bundle.gradle
 exec gradle $ARGS "$@"
