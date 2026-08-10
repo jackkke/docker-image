@@ -1,24 +1,21 @@
 def redirectRepo(repo) {
     if (repo instanceof MavenArtifactRepository) {
         String url = repo.url.toString()
-        if (url.contains('maven.aliyun.com') || url.contains('https://plugins.gradle.org/m2')) {
+        if (url.contains('maven.aliyun.com') || url.contains('plugins.gradle.org')) {
             repo.setUrl('http://192.168.75.90:8081/repository/maven-public/')
             repo.setAllowInsecureProtocol(true)
-            println "[init.gradle] Redirect: ${url} -> http://192.168.75.90:8081/repository/maven-public/"
+            println "MavenArtifactRepository Redirect: ${url} -> http://192.168.75.90:8081/repository/maven-public/"
+        }
+    } else {
+        if (repo.hasProperty("url")) {
+            println("Unkonwn ${repo.name}, ${repo.class.name}, ${repo.url}")
         }
     }
 }
-beforeSettings { settings ->
-    settings.pluginManagement.repositories.whenObjectAdded { redirectRepo(it) }
-    settings.pluginManagement.repositories.all { redirectRepo(it) }
-    settings.dependencyResolutionManagement.repositories.whenObjectAdded { redirectRepo(it) }
-    settings.dependencyResolutionManagement.repositories.all { redirectRepo(it) }
-}
-gradle.beforeProject { project ->
-    project.getBuildscript().getRepositories().whenObjectAdded { redirectRepo(it) }
-    project.getBuildscript().getRepositories().all { redirectRepo(it) }
-    project.buildscript.repositories.whenObjectAdded { redirectRepo(it) }
-    project.buildscript.repositories.all { redirectRepo(it) }
-    project.repositories.whenObjectAdded { redirectRepo(it) }
-    project.repositories.all { redirectRepo(it) }
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+def oldMavenMethod = RepositoryHandler.metaClass.getMetaMethod("maven", Closure)
+RepositoryHandler.metaClass.maven = { Closure closure ->
+    def repo = oldMavenMethod.invoke(delegate, closure)
+    redirectRepo(repo)
+    return repo
 }
