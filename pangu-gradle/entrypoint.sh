@@ -1,7 +1,9 @@
 #!/bin/sh
 TASK=${1:-war}
 
-debug="--info --stacktrace"
+debug=""
+[ "${GRADLE_INFO:-false}" = "true" ] && debug="$debug --info"
+[ "${GRADLE_STACKTRACE:-true}" = "true" ] && debug="$debug --stacktrace"
 export GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Dorg.gradle.daemon=false -Dorg.gradle.vfs.watch=false"
 
 case "$TASK" in
