@@ -5,7 +5,7 @@ WORKDIR /pangu-roof-admin
 
 ARG PNPM_VERSION=latest
 
-RUN corepack enable && corepack prepare pnpm@$PNPM_VERSION --activate  \
+RUN npm install -g pnpm@$PNPM_VERSION  \
     && pnpm config set registry http://192.168.12.88:10000/  \
     && pnpm config set store-dir /.pnpm-store
 

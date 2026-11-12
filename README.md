@@ -47,8 +47,8 @@ docker buildx build --build-arg VERSION=11.5.2 --platform linux/arm64,linux/amd6
 ## 构建 盘古 pnpm
 
 ```shell
-docker buildx build --build-arg NODE_VERSION=24.18.0-bookworm-slim --build-arg PNPM_VERSION=8.15.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-pnpm:8.15.9-20260701 -f pangu-pnpm/Dockerfile --push ./pangu-pnpm
-docker buildx build --build-arg NODE_VERSION=24.18.0-alpine --build-arg PNPM_VERSION=8.15.9 --platform linux/arm64,linux/amd64 -t jackkke/pangu-pnpm:8.15.9-20260701-alpine -f pangu-pnpm/Dockerfile --push ./pangu-pnpm
+docker buildx build --build-arg NODE_VERSION=26.13.1-slim --build-arg PNPM_VERSION=10.32.1 --platform linux/arm64,linux/amd64 -t jackkke/pangu-pnpm:10.32.1-261112 -f pangu-pnpm/Dockerfile --push ./pangu-pnpm
+docker buildx build --build-arg NODE_VERSION=26.13.1-alpine --build-arg PNPM_VERSION=10.32.1 --platform linux/arm64,linux/amd64 -t jackkke/pangu-pnpm:10.32.1-261112-alpine -f pangu-pnpm/Dockerfile --push ./pangu-pnpm
 ```
 
 ## 构建 盘古 gradle
